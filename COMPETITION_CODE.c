@@ -23,6 +23,10 @@
 int motorReq[ MOTOR_NUM ];
 int motorSlew[ MOTOR_NUM ];
 
+int diameter = 4;
+float circumference = 4*PI
+int encoder_ticks = 392;
+
 task SlewRate()
 {
 	unsigned int motorIndex;
@@ -78,9 +82,10 @@ void drive_straight(float distance)
 {
 	SensorValue[leftDrive] = 0;
 	SensorValue[rightDrive] = 0;
-	float ticks = distance/(10* PI)*392;
+	float ticks = distance/(circumference)*encoder_ticks;
 	while (abs(ticks) >  abs(SensorValue[leftDrive]) || (abs(ticks) > abs(SensorValue[rightDrive]))
 	{
+		// finds difference between left and right motors and calculates an increase in speed for one motor
 		int diff = (abs(SensorValue[leftDrive]) - abs(SensorValue[rightDrive]));
 		float mod = sgn(diff)*80*atan(ticks-abs(SensorValue[leftDrive]))*0.1;
 
@@ -96,17 +101,17 @@ void drive_turn(float angle)
 {
 	SensorValue[leftDrive] = 0;
 	SensorValue[rightDrive] = 0;
-	int speed = sgn(angle)*80;
+	int speed = sgn(angle)*80; //speed is -80 when robot is turning left and 80 when robot is turning right
 
 	//int ticks = 7*angle;
-	int desiredDriveTicks = abs((((angle * ((8 * PI)/360))/(4*PI)) * 392));//abs(angle/360 * (10 * PI)/(4*PI) * 392);
+	int desiredDriveTicks = abs((((angle * ((8 * PI)/360))/(circumference)) * encoder_ticks));//abs(angle/360 * (10 * PI)/(4*PI) * 392);
 	while ((abs(SensorValue[leftDrive]) < desiredDriveTicks) && (abs(SensorValue[rightDrive]) < desiredDriveTicks))
 	{
 		int diff = (abs(SensorValue[leftDrive]) - abs(SensorValue[rightDrive]));
 		int mod = sgn(diff)*speed*atan(desiredDriveTicks-abs(SensorValue[leftDrive]))*0.1;
 
 		leftDriveWheel(speed* atan((desiredDriveTicks - abs(SensorValue[leftDrive]))*0.1));
-		rightDriveWheel(-1*speed* atan((desiredDriveTicks - abs(SensorValue[rightDrive]))*0.1)-mod);
+		rightDriveWheel(-speed* atan((desiredDriveTicks - abs(SensorValue[rightDrive]))*0.1)-mod);
 	}
 	leftDriveWheel(0);
 	rightDriveWheel(0);
